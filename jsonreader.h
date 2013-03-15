@@ -54,12 +54,14 @@ public:
 		char c;
 		bool ret = false;
 
+		if(_ReachedEnd)
+		{
+			return false;
+		}
+
 		_Name.resize(0);
 		_Value.resize(0);
 
-        // simple state machine for parsing
-        //  "name" : val
-        //  "name" : "val"
 		for(;;)
 		{
 			c = ReadChar();
@@ -150,7 +152,7 @@ public:
                     _Value.push_back(c);
                     if(!(PeekChar() >= '0' && PeekChar() <= '9'))
                     {
-                        _IntValue = atoi(&_Value[0]);
+                        _IntValue = _atoi64(&_Value[0]);
                         _State = ParseState::EndReadValue;
 						ret = true;
 						break;
@@ -245,11 +247,13 @@ public:
 		return ret;
 	}
 
+	bool IsEnd() { return _ReachedEnd; }
 	NodeType Type() { return _Type; }
     bool IsString() { return _Type == NodeType::String; }
 	const std::string & Name() { return _Name; }
 	const std::string & Value() { return _Value; }
-	int IntValue() { return _IntValue; }
+	int IntValue() { return (int)_IntValue; }
+	__int64 Int64Value() { return _IntValue; }
 
 private:
 	bool IsWhite(char c)
@@ -314,11 +318,13 @@ private:
 	}
 	void InitState(const char * pszBlob, size_t cchBlob)
 	{
+		_ReachedEnd = false;
 		_pszBegin = pszBlob;
 		_pszEnd = pszBlob + cchBlob;
 		_pszCur = _pszBegin;
 
-		_State = ParseState::StartReadName;
+		// json starts with object or array
+		_State = ParseState::StartReadValue;
 		_Name.resize(0);
 		_Value.resize(0);
 	}
@@ -358,5 +364,6 @@ private:
     NodeType _Type;
 	std::string _Name;
 	std::string _Value;
-    int _IntValue;
+    __int64 _IntValue;
+	bool _ReachedEnd;
 };

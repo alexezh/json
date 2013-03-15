@@ -32,18 +32,18 @@ public:
 	{
 	}
 	
-	JsonWriter & WriteName(const char * pszName, size_t cchName)
+	JsonWriter& WriteName(const char * pszName, size_t cchName)
 	{
 		WriteNameWorker(pszName, cchName);
 		return *this;
 	}
-	JsonWriter & WriteName(const std::string & name)
+	JsonWriter& WriteName(const std::string & name)
 	{
 		WriteNameWorker(name.c_str(), name.length());
 		return *this;
 	}
 
-	JsonWriter & WriteStringPair(const char * pszName, size_t cchName, const char * pszValue, size_t cchValue)
+	JsonWriter& WriteStringPair(const char * pszName, size_t cchName, const char * pszValue, size_t cchValue)
 	{
 		WriteNameWorker(pszName, cchName);
 		cchValue = (cchValue > 0) ? cchValue : strlen(pszValue);
@@ -51,28 +51,28 @@ public:
 		_AddSep = true;
 		return *this;
 	}
-	JsonWriter & WriteStringPair(const char * pszName, size_t cchName, const std::string & value)
+	JsonWriter& WriteStringPair(const char * pszName, size_t cchName, const std::string & value)
 	{
 		WriteNameWorker(pszName, cchName);
 		WriteString(value.c_str(), value.length());
 		_AddSep = true;
 		return *this;
 	}
-	JsonWriter & WriteStringValue(const char * pszValue, size_t cchValue)
+	JsonWriter& WriteStringValue(const char * pszValue, size_t cchValue)
 	{
 		cchValue = (cchValue > 0) ? cchValue : strlen(pszValue);
 		WriteString(pszValue, cchValue);
 		_AddSep = true;
 		return *this;
 	}
-	JsonWriter & WriteStringValue(const std::string & value)
+	JsonWriter& WriteStringValue(const std::string & value)
 	{
 		WriteString(value.c_str(), value.length());
 		_AddSep = true;
 		return *this;
 	}
 
-	JsonWriter & WriteIntValue(int val)
+	JsonWriter& WriteIntValue(int val)
 	{
 		// convert int to string and append
 		std::vector<char> arVal;
@@ -84,7 +84,33 @@ public:
 		return *this;
 	}
 
-	JsonWriter & WriteObjectValueStart()
+	JsonWriter& WriteIntPair(const char * pszName, size_t cchName, int val)
+	{
+		WriteName(pszName, cchName);
+		WriteIntValue(val);
+		return *this;
+	}
+
+	JsonWriter& WriteInt64Value(__int64 val)
+	{
+		// convert int to string and append
+		std::vector<char> arVal;
+		arVal.resize(64);
+		_i64toa_s(val, &arVal[0], arVal.size(), 10);
+		arVal.resize(strlen(&arVal[0]));
+		_Result.insert(_Result.end(), arVal.begin(), arVal.end());
+		_AddSep = true;
+		return *this;
+	}
+
+	JsonWriter& WriteInt64Pair(const char * pszName, size_t cchName, __int64 val)
+	{
+		WriteName(pszName, cchName);
+		WriteInt64Value(val);
+		return *this;
+	}
+
+	JsonWriter& WriteObjectValueStart()
 	{
 		if(_AddSep)
 		{
@@ -97,7 +123,7 @@ public:
 		return *this;
 	}
 	
-	JsonWriter & WriteObjectValueEnd()
+	JsonWriter& WriteObjectValueEnd()
 	{
 		_Result.push_back('\n');
 		_Result.push_back('}');
@@ -106,7 +132,7 @@ public:
 		return *this;
 	}
 
-	JsonWriter & WriteArrayValueStart()
+	JsonWriter& WriteArrayValueStart()
 	{
 		if(_AddSep)
 		{
@@ -119,7 +145,7 @@ public:
 		return *this;
 	}
 	
-	JsonWriter & WriteArrayValueEnd()
+	JsonWriter& WriteArrayValueEnd()
 	{
 		_Result.push_back('\n');
 		_Result.push_back(']');
