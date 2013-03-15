@@ -144,7 +144,7 @@ public:
 					ret = true;
 					break;
 				}
-				else if(c >= '0' && c <= '9')
+				else if((c >= '0' && c <= '9') || c == '-')
 				{
 					_Type = NodeType::Int;
 					_State = ParseState::ReadIntValue;
@@ -157,6 +157,16 @@ public:
 						ret = true;
 						break;
                     }
+				}
+				else if(c == ']')
+				{
+					// empty array
+					_State = ParseState::EndReadValue;
+					_Type = NodeType::EndArray;
+					_Name = _ParseStack.top().Name;
+					_ParseStack.pop();
+					ret = true;
+					break;
 				}
 				else
 				{
@@ -188,7 +198,7 @@ public:
                 _Value.push_back(c);
                 if(!(PeekChar() >= '0' && PeekChar() <= '9'))
                 {
-                    _IntValue = atoi(&_Value[0]);
+                    _IntValue = _atoi64(&_Value[0]);
                     _State = ParseState::EndReadValue;
 					ret = true;
 					break;
@@ -274,6 +284,7 @@ private:
         \u four-hex-digits
     */
 
+	// returns current char and moves cursor to next position
     char ReadChar()
 	{
 		if(_pszCur < _pszEnd)
@@ -304,11 +315,13 @@ private:
                 return '\0';
         }
 	}
+
+	// returns current char without reading it
 	char PeekChar()
 	{
-		if(_pszCur+1 < _pszEnd)
+		if(_pszCur < _pszEnd)
 		{
-			char c = *(_pszCur+1);
+			char c = *_pszCur;
 			return c;
 		}
 		else
