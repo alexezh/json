@@ -29,6 +29,7 @@ class JsonWriter
 public:
 	JsonWriter()
 		: _AddSep(false)
+		, _Ident(0)
 	{
 	}
 	
@@ -118,16 +119,16 @@ public:
 			_AddSep = false;
 		}
 
-		_Result.push_back('{');
 		_Result.push_back('\n');
+		_Result.push_back('{');
+		_Ident++;
 		return *this;
 	}
 	
 	JsonWriter& WriteObjectValueEnd()
 	{
-		_Result.push_back('\n');
+		_Ident--;
 		_Result.push_back('}');
-		_Result.push_back('\n');
 		_AddSep = true;
 		return *this;
 	}
@@ -141,15 +142,12 @@ public:
 		}
 
 		_Result.push_back('[');
-		_Result.push_back('\n');
 		return *this;
 	}
 	
 	JsonWriter& WriteArrayValueEnd()
 	{
-		_Result.push_back('\n');
 		_Result.push_back(']');
-		_Result.push_back('\n');
 		_AddSep = true;
 		return *this;
 	}
@@ -192,7 +190,10 @@ private:
 		}
 		_Result.push_back('"');
 	}
+
 private:
 	std::vector<char> _Result;
+	int _Ident;
+	std::vector<char> _IdentBuf;
 	bool _AddSep;
 };
