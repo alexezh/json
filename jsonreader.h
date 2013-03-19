@@ -49,6 +49,7 @@ public:
 		InitState(blob.data(), blob.size());
 	}
 
+	// read next element
 	bool ReadNext()
 	{
 		char c;
@@ -257,6 +258,45 @@ public:
 		return ret;
 	}
 
+	// skips the content of current node
+	// read to next 
+	bool ReadNextValue()
+	{
+		if(!(_Type == NodeType::Array || _Type == NodeType::Object))
+		{
+			return ReadNext();
+		}
+
+		NodeType startType = _Type;
+		NodeType endType = (_Type == NodeType::Array) ? NodeType::EndArray : NodeType::EndObject;
+		int level = 1;
+
+		// skip until matching end object
+		_Skip = true;
+		while(ReadNext())
+		{
+			if(_Type == startType)
+			{
+				level++;
+			}
+			else if(_Type == endType)
+			{
+				level--;
+				if(level == 0)
+				{
+					break;
+				}
+			}
+		}
+		_Skip = false;
+		if(level != 0)
+		{
+			return false;
+		}
+
+		return ReadNext();
+	}
+
 	bool IsEnd() { return _ReachedEnd; }
 	NodeType Type() { return _Type; }
     bool IsString() { return _Type == NodeType::String; }
@@ -379,4 +419,5 @@ private:
 	std::string _Value;
     __int64 _IntValue;
 	bool _ReachedEnd;
+	bool _Skip;
 };
